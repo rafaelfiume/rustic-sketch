@@ -1,0 +1,45 @@
+# Use the latest 2.1 version of CircleCI pipeline process engine.
+# See: https://circleci.com/docs/configuration-reference
+version: 2.1
+
+# Define a job to be invoked later in a workflow.
+# See: https://circleci.com/docs/configuration-reference/#jobs
+jobs:
+  build-and-publish:
+    # Specify the execution environment. You can specify an image from Docker Hub or use one of our convenience images from CircleCI's Developer Hub.
+    # See: https://circleci.com/docs/configuration-reference/#executor-job
+    docker:
+      - image: cimg/rust:1.74.0
+    # Add steps to the job
+    # See: https://circleci.com/docs/configuration-reference/#steps
+    steps:
+      - checkout
+      - run:
+          name: Run Tests
+          command: "cargo test"
+
+      - setup_remote_docker:
+          version: 20.10.14
+          docker_layer_caching: true
+
+      - run:
+          name: Set app version
+          command: |
+            VERSION=$(./tools/pipeline/version.sh)
+            echo "VERSION=$VERSION" >> $BASH_ENV
+            source $BASH_ENV
+
+      - run:
+          name: Build and tag docker image
+          command: ./tools/pipeline/docker/build-and-tag-image.sh
+
+      - run:
+          name: Publish docker image
+          command: ./tools/pipeline/docker/publish-image.sh
+
+# Orchestrate jobs using workflows
+# See: https://circleci.com/docs/configuration-reference/#workflows
+workflows:
+  build-rustic-sketch:
+    jobs:
+      - build-and-publish
