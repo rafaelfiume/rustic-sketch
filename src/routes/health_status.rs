@@ -13,29 +13,30 @@ fn ping() -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
 }
 
 fn health_check() -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
-    warp::path("status").and_then(check_health)
+    warp::path("status").and_then(|| async {
+        match check_health().await {
+            Ok(service_health) => Ok(warp::reply::json(&service_health)),
+            Err(e) => Err(reject::custom(e)),
+        }
+    })
+}
+
+async fn check_health() -> Result<ServiceStatus, VersionLoadError> {
+    // TODO Hardcoded
+    let env = Environment::new("dev".to_string());
+    let version = Version::current_version(env, &"rustic.version".to_string())?;
+    // dbg!(&version);
+    let dependencies = vec![DependencyStatus {
+        dependency: Dependency::Database,
+        status: Status::Ok,
+    }];
+    Ok(ServiceStatus::new(version, dependencies))
 }
 
 // TODO Wrap a json payload?
 //struct CustomJsonRejection(reply::Json);
 
 impl warp::reject::Reject for VersionLoadError {}
-
-async fn check_health(/* db */) -> Result<impl warp::Reply, Rejection> {
-    // TODO Hardcoded
-    let env = Environment::new("dev".to_string());
-    let version = match Version::current_version(env, &"rustic.version".to_string()) {
-        Ok(v) => v,
-        Err(e) => return Err(reject::custom(e)),
-    };
-    // dbg!(&version);
-    let dependencies = vec![DependencyStatus {
-        dependency: Dependency::Database,
-        status: Status::Ok,
-    }];
-    let service_health = ServiceStatus::new(version, dependencies);
-    Ok(warp::reply::json(&service_health))
-}
 
 #[cfg(test)]
 mod tests {
