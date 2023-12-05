@@ -62,7 +62,8 @@ impl fmt::Display for VersionLoadError {
 impl Error for VersionLoadError {}
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
-// use owned String type instead of slice &str: each instance of this struct own its own data,
+// The newtype pattern.
+// Use owned String instead of slice &str: each instance of this struct own its own data,
 // always valid for as long the entire struct is valid.
 pub struct Environment(String);
 impl Environment {
