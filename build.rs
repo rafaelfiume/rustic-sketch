@@ -16,7 +16,7 @@ fn create_version_file() -> Result<(), Box<dyn Error>> {
     let commit_hash = head_commit_hash()?;
 
     let version_file_path = format!("{}/rustic.version", OUT_DIR);
-    let mut version_file = File::create(&version_file_path)?;
+    let mut version_file = File::create(version_file_path)?;
     version_file.write_all(build.as_bytes())?;
     version_file.write_all(b"\n")?;
     version_file.write_all(commit_hash.as_bytes())?;
@@ -28,7 +28,7 @@ fn pipeline_release_version() -> Result<String, VarError> {
     let build_num = env::var("CIRCLE_BUILD_NUM")?;
     let version = env::var("CIRCLE_BRANCH").map(|branch| {
         if branch == "main" {
-            return build_num;
+            build_num
         } else {
             format!("{branch}.{build_num}")
         }
