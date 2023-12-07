@@ -1,10 +1,11 @@
-use serde::Deserialize;
-use serde::Serialize;
+extern crate derive_more;
+
+use derive_more::Display;
 use std::error::Error;
 use std::fmt;
 use std::fs;
 
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Version {
     env: Environment,
     build: Build,
@@ -63,7 +64,7 @@ impl fmt::Display for VersionLoadError {
 }
 impl Error for VersionLoadError {}
 
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Debug, Display, PartialEq)]
 // The newtype pattern.
 // Use owned String instead of slice &str: each instance of this struct own its own data,
 // always valid for as long the entire struct is valid.
@@ -74,30 +75,19 @@ impl Environment {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Debug, Display, PartialEq)]
 pub struct Build(String);
 impl Build {
     pub fn new(value: String) -> Self {
         Build(value)
     }
 }
-// See https://doc.rust-lang.org/rust-by-example/hello/print/print_display.html
-impl fmt::Display for Build {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
 
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Debug, Display, PartialEq)]
 pub struct Commit(String);
 impl Commit {
     pub fn new(value: String) -> Self {
         Commit(value)
-    }
-}
-impl fmt::Display for Commit {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
     }
 }
 
