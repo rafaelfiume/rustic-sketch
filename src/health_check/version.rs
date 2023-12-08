@@ -1,8 +1,8 @@
 extern crate derive_more;
 
+use derive_more::Constructor;
 use derive_more::Display;
 use std::error::Error;
-use std::fmt;
 use std::fs;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -53,43 +53,23 @@ impl Version {
 }
 
 // TODO use anyhow or thiserror to deal with errors?
-#[derive(Debug)]
+#[derive(Debug, Display)]
 pub struct VersionLoadError {
     message: String,
 }
-impl fmt::Display for VersionLoadError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.message)
-    }
-}
 impl Error for VersionLoadError {}
 
-#[derive(Clone, Debug, Display, PartialEq)]
+#[derive(Clone, Constructor, Debug, Display, PartialEq)]
 // The newtype pattern.
 // Use owned String instead of slice &str: each instance of this struct own its own data,
 // always valid for as long the entire struct is valid.
 pub struct Environment(String);
-impl Environment {
-    pub fn new(name: String) -> Self {
-        Environment(name)
-    }
-}
 
-#[derive(Clone, Debug, Display, PartialEq)]
+#[derive(Clone, Constructor, Debug, Display, PartialEq)]
 pub struct Build(String);
-impl Build {
-    pub fn new(value: String) -> Self {
-        Build(value)
-    }
-}
 
-#[derive(Clone, Debug, Display, PartialEq)]
+#[derive(Clone, Constructor, Debug, Display, PartialEq)]
 pub struct Commit(String);
-impl Commit {
-    pub fn new(value: String) -> Self {
-        Commit(value)
-    }
-}
 
 #[cfg(test)]
 pub mod tests {

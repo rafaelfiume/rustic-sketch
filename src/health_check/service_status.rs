@@ -1,6 +1,7 @@
 extern crate derive_more;
 
 use crate::health_check::version::*;
+use derive_more::Constructor;
 use derive_more::Display;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -49,9 +50,17 @@ pub enum Dependency {
     Database,
 }
 
-// TODO Public?
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Constructor, Debug, PartialEq)]
 pub struct DependencyStatus {
-    pub dependency: Dependency,
-    pub status: Status,
+    dependency: Dependency,
+    status: Status,
+}
+
+impl DependencyStatus {
+    pub fn dependency(&self) -> &Dependency {
+        &self.dependency
+    }
+    pub fn status(&self) -> &Status {
+        &self.status
+    }
 }

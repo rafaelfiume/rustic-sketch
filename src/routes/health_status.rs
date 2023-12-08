@@ -38,10 +38,7 @@ async fn do_check_health() -> Result<ServiceStatus, VersionLoadError> {
     // TODO Hardcoded for now
     let env = Environment::new("dev".to_string());
     let version = Version::current_version(env, &"rustic.version".to_string())?;
-    let dependencies = vec![DependencyStatus {
-        dependency: Dependency::Database,
-        status: Status::Ok,
-    }];
+    let dependencies = vec![DependencyStatus::new(Dependency::Database, Status::Ok)];
     Ok(ServiceStatus::new(version, dependencies))
 }
 
@@ -122,15 +119,15 @@ mod model {
 
     #[derive(Debug, PartialEq)]
     pub struct DependencyStatusPayload {
-        pub dependency: String,
-        pub status: String,
+        dependency: String,
+        status: String,
     }
     impl AsPayload for DependencyStatus {
         type Payload = DependencyStatusPayload;
         fn as_payload(&self) -> Self::Payload {
             DependencyStatusPayload {
-                dependency: self.dependency.as_payload(),
-                status: self.status.as_payload(),
+                dependency: self.dependency().as_payload(),
+                status: self.status().as_payload(),
             }
         }
     }
