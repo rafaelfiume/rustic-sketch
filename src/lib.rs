@@ -1,5 +1,5 @@
 pub mod health_check; // publicly re-exported so it can be used in integration tests
-mod routes;
+pub mod routes;
 
 use routes::health_status;
 use warp::Filter;
