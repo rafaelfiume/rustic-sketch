@@ -1,9 +1,11 @@
-use crate::health_check::version::*;
-use serde::{ser::SerializeStruct, Serialize, Serializer};
+extern crate derive_more;
 
-#[derive(Debug, Serialize)]
+use crate::health_check::version::*;
+use derive_more::Constructor;
+use derive_more::Display;
+
+#[derive(Clone, Debug, PartialEq)]
 pub struct ServiceStatus {
-    #[serde(flatten)]
     version: Version,
     status: Status,
     dependencies: Vec<DependencyStatus>,
@@ -18,43 +20,47 @@ impl ServiceStatus {
             }
         });
         ServiceStatus {
-            version: version,
+            version,
             status: overall_status,
-            dependencies: dependencies,
+            dependencies,
         }
+    }
+
+    pub fn version(&self) -> &Version {
+        &self.version
+    }
+
+    pub fn status(&self) -> &Status {
+        &self.status
+    }
+
+    pub fn dependencies(&self) -> &Vec<DependencyStatus> {
+        &self.dependencies
     }
 }
 
-#[derive(Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, Display, PartialEq)]
 pub enum Status {
     Ok,
     Degraded,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Clone, Debug, Display, PartialEq)]
 pub enum Dependency {
     Database,
 }
-impl Dependency {
-    fn name(&self) -> &'static str {
-        match self {
-            Dependency::Database => "database",
-        }
-    }
+
+#[derive(Clone, Constructor, Debug, PartialEq)]
+pub struct DependencyStatus {
+    dependency: Dependency,
+    status: Status,
 }
 
-#[derive(Debug)]
-pub struct DependencyStatus {
-    pub dependency: Dependency,
-    pub status: Status,
-}
-impl Serialize for DependencyStatus {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("DependencyStatus", 2)?;
-        state.serialize_field(&self.dependency.name(), &self.status)?;
-        state.end()
+impl DependencyStatus {
+    pub fn dependency(&self) -> &Dependency {
+        &self.dependency
+    }
+    pub fn status(&self) -> &Status {
+        &self.status
     }
 }
