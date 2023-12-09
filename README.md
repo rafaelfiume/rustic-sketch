@@ -5,6 +5,8 @@
 ### The Language
 
 #### ? Operator
+  - [#expect](tests/public_contracts.rs)
+  - [#unwrap]
   - [Testing Api contracts](tests/test_kit.rs)
 
 #### Async Closures
@@ -21,19 +23,26 @@
  - [dbg!](tests/public_contracts.rs)
  - [format!](tests/public_contracts.rs)
 
-#### Type Alias:
- - [Integration tests with TestResult](tests/test_kit.rs)
+#### Types
+ - [Associated Types](src/routes/health_status/model.rs)
+ - [Type Alias](tests/test_kit.rs)
 
 ### Interesting Crates
+
+#### derive-more
+ - [Display]
+ - [Constructor]
+
+#### Serde
+ - [Derived Serialization and Deserialization](src/routes/health_status/model.rs)
+ - [Custom Deserialization](src/routes/health_status/model.rs)
+ - [Custom Serialization](src/routes/health_status/model.rs)
 
 #### warp
  - ???
 
-#### derive-more
- - ???
-
 ### Tests
  - [Integration test](tests/version_test.rs)
- - [Property-based test]
+ - [Property-based test](). Also see (proptest! macro doesn't play nice with tokio::test)[https://github.com/proptest-rs/proptest/issues/179].
  - [Table-driven test](tests/public_contracts.rs)
  - [Unit test](src/routes/health_status.rs)
