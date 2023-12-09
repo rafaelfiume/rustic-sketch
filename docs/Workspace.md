@@ -35,22 +35,23 @@
 ## Useful Resources
 
 Build-dependencies:
- - [git2](https://crates.io/crates/git2)
+ - [git2-rs](https://crates.io/crates/git2)
 
 Dependencies:
- - [serde](https://serde.rs/)
- - [serde-json](https://crates.io/crates/serde_json)
- - [SQLx - crates.io](https://crates.io/crates/sqlx#sqlx-is-not-an-orm)
- - [thiserror - crates.io](https://crates.io/crates/thiserror) // Shall I use it?
+ - [Serde](https://serde.rs/)
+ - [Serde-json - crates.io](https://crates.io/crates/serde_json)
+ - [SQLx - crates.io](https://crates.io/crates/sqlx)
+ - [derive(Error) - crates.io](https://crates.io/crates/thiserror) // Shall I use it?
+ - [Tokio](https://tokio.rs/tokio/tutorial)
  - [Tokio - crates.io](https://crates.io/crates/tokio)
- - [Tokio Tutorial](https://tokio.rs/tokio/tutorial)
- - [Warp](https://docs.rs/warp/latest/warp/test/index.html)
- - [Warp - crates.io](??)
- - [Warp - Examples](https://github.com/seanmonstar/warp/blob/master/examples/todos.rs)
+ - [warp](https://docs.rs/warp/latest/warp/test/index.html)
+ - [warp - crates.io](https://crates.io/crates/warp)
+ - [warp - Examples](https://github.com/seanmonstar/warp/blob/master/examples/todos.rs)
 
 Dev-dependencies:
- - [claims](https://crates.io/crates/claims)
- - [Proptest](https://crates.io/crates/proptest)
+ - [claims - crates.io](https://crates.io/crates/claims)
+ - [Proptest](https://proptest-rs.github.io/proptest/proptest/getting-started.html)
+ - [Proptest - crates.io](https://crates.io/crates/proptest)
 
 Docker:
   - [5x Faster Rust Docker Builds with cargo-chef](https://www.lpalmieri.com/posts/fast-rust-docker-builds/)
