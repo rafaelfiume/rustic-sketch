@@ -48,9 +48,8 @@ async fn do_check_health() -> Result<ServiceStatus, VersionLoadError> {
 impl warp::reject::Reject for VersionLoadError {}
 
 mod payload_converters {
-    pub trait AsPayload {
-        type Payload;
-        fn as_payload(&self) -> Self::Payload;
+    pub trait AsPayload<T> {
+        fn as_payload(&self) -> T;
     }
 }
 
@@ -69,10 +68,8 @@ mod model {
         status: String,
         dependencies: Vec<DependencyStatusPayload>,
     }
-
-    impl AsPayload for ServiceStatus {
-        type Payload = ServiceStatusPayload;
-        fn as_payload(&self) -> Self::Payload {
+    impl AsPayload<ServiceStatusPayload> for ServiceStatus {
+        fn as_payload(&self) -> ServiceStatusPayload {
             ServiceStatusPayload {
                 version: self.version().as_payload(),
                 status: self.status().as_payload().to_owned(),
@@ -87,9 +84,8 @@ mod model {
         build: String,
         commit: String,
     }
-    impl AsPayload for Version {
-        type Payload = VersionPayload;
-        fn as_payload(&self) -> Self::Payload {
+    impl AsPayload<VersionPayload> for Version {
+        fn as_payload(&self) -> VersionPayload {
             VersionPayload {
                 env: self.env().to_string(),
                 build: self.build().to_string(),
@@ -98,18 +94,16 @@ mod model {
         }
     }
 
-    impl AsPayload for Dependency {
-        type Payload = String;
-        fn as_payload(&self) -> Self::Payload {
+    impl AsPayload<String> for Dependency {
+        fn as_payload(&self) -> String {
             match self {
                 Dependency::Database => "database".to_string(),
             }
         }
     }
 
-    impl AsPayload for Status {
-        type Payload = String;
-        fn as_payload(&self) -> Self::Payload {
+    impl AsPayload<String> for Status {
+        fn as_payload(&self) -> String {
             match self {
                 Status::Ok => "Ok".to_string(),
                 Status::Degraded => "Degraded".to_string(),
@@ -122,9 +116,8 @@ mod model {
         dependency: String,
         status: String,
     }
-    impl AsPayload for DependencyStatus {
-        type Payload = DependencyStatusPayload;
-        fn as_payload(&self) -> Self::Payload {
+    impl AsPayload<DependencyStatusPayload> for DependencyStatus {
+        fn as_payload(&self) -> DependencyStatusPayload {
             DependencyStatusPayload {
                 dependency: self.dependency().as_payload(),
                 status: self.status().as_payload(),
@@ -219,7 +212,7 @@ mod tests {
             let c = primed_service_status.clone();
             async { Ok::<ServiceStatus, VersionLoadError>(c) }
         };
-        let status = health_check(move || check_health_returns_ok());
+        let status = health_check(check_health_returns_ok);
 
         let result = warp::test::request()
             .method("GET")
