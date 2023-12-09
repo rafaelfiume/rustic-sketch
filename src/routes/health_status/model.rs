@@ -17,14 +17,14 @@ pub mod payload_converters {
 pub struct ServiceStatusPayload {
     #[serde(flatten)]
     version: VersionPayload,
-    status: String,
+    status: Status,
     dependencies: Vec<DependencyStatusPayload>,
 }
 impl AsPayload<ServiceStatusPayload> for ServiceStatus {
     fn as_payload(&self) -> ServiceStatusPayload {
         ServiceStatusPayload {
             version: self.version().as_payload(),
-            status: self.status().as_payload().to_owned(),
+            status: self.status().clone(),
             dependencies: self.dependencies().iter().map(|d| d.as_payload()).collect(),
         }
     }
@@ -46,33 +46,74 @@ impl AsPayload<VersionPayload> for Version {
     }
 }
 
-impl AsPayload<String> for Dependency {
-    fn as_payload(&self) -> String {
-        match self {
-            Dependency::Database => "database".to_string(),
+impl Serialize for Status {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(match self {
+            Status::Ok => "Ok",
+            Status::Degraded => "Degraded",
+        })
+    }
+}
+
+impl Serialize for Dependency {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(match self {
+            Dependency::Database => "database",
+        })
+    }
+}
+
+// A custom Deserializer for enums combined with contract tests will make sure contracts are kept
+
+impl<'de> Deserialize<'de> for Status {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        match s.as_str() {
+            "Ok" => Ok(Status::Ok),
+            "Degraded" => Ok(Status::Degraded),
+            unknown => Err(serde::de::Error::custom(format!(
+                "Invalid Status: `{}`",
+                unknown
+            ))),
         }
     }
 }
 
-impl AsPayload<String> for Status {
-    fn as_payload(&self) -> String {
-        match self {
-            Status::Ok => "Ok".to_string(),
-            Status::Degraded => "Degraded".to_string(),
+impl<'de> Deserialize<'de> for Dependency {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        match s.as_str() {
+            "database" => Ok(Dependency::Database),
+            unknown => Err(serde::de::Error::custom(format!(
+                "Invalid Dependency: `{}`",
+                unknown
+            ))),
         }
     }
 }
 
 #[derive(Debug, PartialEq)]
 pub struct DependencyStatusPayload {
-    dependency: String,
-    status: String,
+    dependency: Dependency,
+    status: Status,
 }
 impl AsPayload<DependencyStatusPayload> for DependencyStatus {
     fn as_payload(&self) -> DependencyStatusPayload {
         DependencyStatusPayload {
-            dependency: self.dependency().as_payload(),
-            status: self.status().as_payload(),
+            dependency: self.dependency().clone(),
+            status: self.status().clone(),
         }
     }
 }
