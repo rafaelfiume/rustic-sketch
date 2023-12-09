@@ -11,7 +11,23 @@ use test_kit::TestResult;
 
 #[test]
 fn status_ok_contract() -> TestResult {
-    let json = fs::read_to_string("tests/resources/contracts/health_check/status_ok.json")?;
+    struct TestCase {
+        sample: &'static str,
+    }
+    let test_cases = vec![
+        TestCase { sample: "ok" },
+        //TestCase { sample: "bum" }, // Try it to see the error
+        TestCase { sample: "degraded" },
+    ];
+    // note that `try_for_each` will interrupt the tests on the first error
+    test_cases.iter().try_for_each(|case| {
+        let path_to_contract = format!(
+            "tests/resources/contracts/health_check/status_{}.json",
+            case.sample
+        );
+        let json = fs::read_to_string(&path_to_contract)
+            .expect(&format!("Could not read file `{}`", &path_to_contract));
 
-    assert_bijective_relationship_between_encoder_and_decoder::<ServiceStatusPayload>(&json)
+        assert_bijective_relationship_between_encoder_and_decoder::<ServiceStatusPayload>(&json)
+    })
 }
