@@ -76,7 +76,7 @@ mod tests {
 
     #[tokio::test]
     async fn status_returns_version() {
-        let version = version::tests::current_version(
+        let version = version::test_kit::current_version(
             Environment::new("dev".to_string()),
             Build::new("feat.branch.108".to_string()),
             Commit::new("c11e2d041c9b4ca66e241f8429e9a2876a8e0b18".to_string()),
