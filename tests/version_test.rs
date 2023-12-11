@@ -3,7 +3,6 @@ use rustic_sketch::health_check::version::{Build, Commit, Environment, Version};
 use std::error::Error;
 use std::fs;
 
-// TODO Can I have property-based integration tests?
 #[test]
 fn current_service_version() {
     let env = Environment::new("dev".to_string());
@@ -20,8 +19,6 @@ fn current_service_version() {
     assert_eq!(result.commit(), &commit);
     fs::remove_file(&version_file_path).expect("error when removing version file")
 }
-
-// Sad path
 
 #[test]
 fn current_service_version_returns_error_when_there_is_no_version_file() {

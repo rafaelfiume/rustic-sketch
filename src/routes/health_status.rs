@@ -76,11 +76,10 @@ mod tests {
 
     #[tokio::test]
     async fn status_returns_version() {
-        // TODO Property-based tests
-        let version = version::tests::current_version(
-            Environment::new("test".to_string()),
-            Build::new("fjadljfald;sjfsaf".to_string()),
-            Commit::new("fjdfljafj;asfdsf".to_string()),
+        let version = version::test_kit::current_version(
+            Environment::new("dev".to_string()),
+            Build::new("feat.branch.108".to_string()),
+            Commit::new("c11e2d041c9b4ca66e241f8429e9a2876a8e0b18".to_string()),
         )
         .unwrap();
         let service_status = ServiceStatus::new(version, Vec::new());
