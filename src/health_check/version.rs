@@ -96,12 +96,12 @@ pub(crate) mod test_kit {
     prop_compose! {
         // The generated function will take the fst parameter list as arguments
         // Strategies parameters are defined in the snd argument list
-        pub fn arb_versions()(env in arb_envs(), build in arb_build(), commit in arb_commit()) -> Version {
+        pub fn arb_version()(env in arb_env(), build in arb_build(), commit in arb_commit()) -> Version {
           current_version(env, build, commit).unwrap()
         }
     }
 
-    fn arb_envs() -> impl Strategy<Value = Environment> {
+    fn arb_env() -> impl Strategy<Value = Environment> {
         prop_oneof![Just("dev".to_string()), Just("prd".to_string())].prop_map(Environment::new)
     }
 

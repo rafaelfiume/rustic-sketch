@@ -39,18 +39,20 @@ impl ServiceStatus {
     }
 }
 
-#[derive(Clone, Debug, Display, PartialEq)]
+#[derive(Clone, Debug, Display, Eq, Hash, PartialEq)]
 pub enum Status {
     Ok,
     Degraded,
 }
 
-#[derive(Clone, Debug, Display, PartialEq)]
+#[derive(Clone, Debug, Display, Eq, Hash, PartialEq)]
 pub enum Dependency {
+    Auth0,
     Database,
+    Snitch,
 }
 
-#[derive(Clone, Constructor, Debug, PartialEq)]
+#[derive(Clone, Constructor, Debug, Eq, Hash, PartialEq)]
 pub struct DependencyStatus {
     dependency: Dependency,
     status: Status,
@@ -69,39 +71,37 @@ impl DependencyStatus {
 mod test {
     use super::*;
     use crate::health_check::service_status::test_kit::*;
-    use crate::health_check::version::test_kit::arb_versions;
-    use proptest::proptest;
+    use crate::health_check::version::test_kit::arb_version;
     use proptest::collection::vec;
+    use proptest::proptest;
 
     proptest! {
         #[test]
-        fn establishes_service_good_health(
-            version in arb_versions(),
-            dependencies in vec(arb_healthy_dependencies(), 0..2),
+        fn establish_service_good_health(
+            version in arb_version(),
+            dependencies in vec(arb_healthy_dependency(), 0..4),
         ) {
-            let result = ServiceStatus::new(version.clone(), dependencies.clone());
+            let result = ServiceStatus::new(version, dependencies);
             assert_eq!(result.status, Status::Ok)
        }
     }
 
-    // TODO Check combination of Ok and Degraded status
-
     proptest! {
         #[test]
-        fn establishes_service_poor_health(
-            version in arb_versions(),
-            dependencies in vec(arb_unhealthy_dependencies(), 1..2),
+        fn establish_service_poor_health(
+            version in arb_version(),
+            dependencies in arb_unhealthy_dependencies(),
         ) {
-            let result = ServiceStatus::new(version.clone(), dependencies.clone());
+            let result = ServiceStatus::new(version, dependencies);
             assert_eq!(result.status, Status::Degraded)
        }
     }
 
     proptest! {
         #[test]
-        fn tracks_version_and_dependencies(
-            version in arb_versions(),
-            dependencies in vec(arb_service_dependencies(), 0..2)
+        fn track_version_and_dependencies(
+            version in arb_version(),
+            dependencies in vec(arb_service_dependency(), 0..4)
         ) {
             let result = ServiceStatus::new(version.clone(), dependencies.clone());
             assert_eq!(result.version, version);
@@ -113,28 +113,43 @@ mod test {
 #[cfg(test)]
 pub(crate) mod test_kit {
     use super::*;
+    use proptest::collection::vec;
     use proptest::prelude::*;
+    use std::collections::HashSet;
 
-    pub fn arb_healthy_dependencies() -> impl Strategy<Value = DependencyStatus> {
-        // filtering in action
-        arb_service_dependencies().prop_filter("Ok", |d| d.status == Status::Ok)
+    pub fn arb_healthy_dependency() -> impl Strategy<Value = DependencyStatus> {
+        arb_service_dependency().prop_filter("Ok", |d| d.status == Status::Ok)
     }
 
-    pub fn arb_unhealthy_dependencies() -> impl Strategy<Value = DependencyStatus> {
-        arb_service_dependencies().prop_filter("Degraded", |d| d.status == Status::Degraded)
-    }
-
-    pub fn arb_service_dependencies() -> impl Strategy<Value = DependencyStatus> {
+    pub fn arb_service_dependency() -> impl Strategy<Value = DependencyStatus> {
         // manually composing strategies with `prop_map` instead of using `prop_compose!`
-        (arb_dependencies(), arb_status())
+        (arb_dependency(), arb_status())
             .prop_map(|(dependencies, status)| DependencyStatus::new(dependencies, status))
     }
 
-    fn arb_status() -> impl Strategy<Value = Status> {
-        prop_oneof![Just(Status::Ok), Just(Status::Degraded),]
+    pub fn arb_unhealthy_dependencies() -> impl Strategy<Value = Vec<DependencyStatus>> {
+        vec(arb_healthy_dependency(), 1..4)
+            .prop_flat_map(|vec| {
+                let unique: HashSet<_> = vec.into_iter().collect();
+                let len = unique.len();
+                let vec: Vec<_> = unique.into_iter().collect();
+                (Just(vec), 0..len)
+            })
+            .prop_flat_map(|(mut vec, idx)| {
+                vec[idx].status = Status::Degraded;
+                Just(vec)
+            })
     }
 
-    fn arb_dependencies() -> impl Strategy<Value = Dependency> {
-        prop_oneof![Just(Dependency::Database),]
+    fn arb_status() -> impl Strategy<Value = Status> {
+        prop_oneof![Just(Status::Ok), Just(Status::Degraded)]
+    }
+
+    fn arb_dependency() -> impl Strategy<Value = Dependency> {
+        prop_oneof![
+            Just(Dependency::Auth0),
+            Just(Dependency::Database),
+            Just(Dependency::Snitch)
+        ]
     }
 }

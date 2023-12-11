@@ -64,7 +64,9 @@ impl Serialize for Dependency {
         S: Serializer,
     {
         serializer.serialize_str(match self {
+            Dependency::Auth0 => "auth0",
             Dependency::Database => "database",
+            Dependency::Snitch => "snitch",
         })
     }
 }
