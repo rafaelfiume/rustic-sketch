@@ -5,6 +5,11 @@ use derive_more::Display;
 use std::error::Error;
 use std::fs;
 
+// TODO Async
+pub trait Versioned {
+    fn version(&self) -> Result<Version, VersionLoadError>;
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Version {
     env: Environment,
@@ -12,6 +17,7 @@ pub struct Version {
     commit: Commit,
 }
 impl Version {
+    // TODO make it async
     pub fn current_version(
         environment: Environment,
         path: &String,
@@ -52,10 +58,36 @@ impl Version {
     }
 }
 
+struct VersionFromFile {
+    env: Environment,
+    path: String,
+}
+
+impl Versioned for VersionFromFile {
+    fn version(&self) -> Result<Version, VersionLoadError> {
+        let content = fs::read_to_string(&self.path).map_err(|e| VersionLoadError {
+            message: e.to_string(),
+        })?;
+        let mut lines = content.lines();
+        let build = lines.next().ok_or(VersionLoadError {
+            message: "No build number specified in 'rustic.version'".to_string(),
+        })?;
+        let commit = lines.next().ok_or(VersionLoadError {
+            message: "No commit hash specified in 'rustic.version'".to_string(),
+        })?;
+        let version = Version {
+            env: self.env.to_owned(),
+            build: Build::new(build.to_owned()),
+            commit: Commit::new(commit.to_owned()),
+        };
+        Ok(version)
+    }
+}
+
 // TODO use anyhow or thiserror to deal with errors?
 #[derive(Debug, Display)]
 pub struct VersionLoadError {
-    message: String,
+    pub message: String,
 }
 impl Error for VersionLoadError {}
 
@@ -80,6 +112,21 @@ pub(crate) mod test_kit {
     use crate::health_check::version::{Environment, Version};
 
     // ** Stubs ** //
+
+    pub struct StubVersion {
+        pub env: Environment,
+        pub build: Build,
+        pub commit: Commit,
+    }
+    impl Versioned for StubVersion {
+        fn version(&self) -> Result<Version, VersionLoadError> {
+            Ok(Version {
+                env: self.env.clone(),
+                build: self.build.clone(),
+                commit: self.commit.clone(),
+            })
+        }
+    }
 
     pub fn current_version(
         env: Environment,

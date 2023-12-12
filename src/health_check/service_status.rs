@@ -57,7 +57,6 @@ pub struct DependencyStatus {
     dependency: Dependency,
     status: Status,
 }
-
 impl DependencyStatus {
     pub fn dependency(&self) -> &Dependency {
         &self.dependency
