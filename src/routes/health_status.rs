@@ -40,7 +40,7 @@ impl warp::reject::Reject for HealthCheckError {}
 mod tests {
     use super::*;
     use crate::health_check::service_status::{
-        Dependency, DependencyStatus, ServiceStatus, Status,
+        ServiceStatus,
     };
     use crate::health_check::test_kit::StubHealthChecker;
     use crate::health_check::version;
