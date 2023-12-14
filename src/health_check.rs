@@ -53,7 +53,7 @@ impl Error for HealthCheckError {}
 
 #[cfg(test)]
 mod tests {
-    use super::version::test_kit;
+    use super::version::test_kit::StubVersion;
     use super::*;
     use crate::health_check::service_status::{Dependency, Status};
     use crate::health_check::test_kit::StubDependencyHealthChecker;
@@ -61,11 +61,11 @@ mod tests {
 
     #[tokio::test]
     async fn service_status_is_ok() {
-        let versioned = test_kit::StubVersion {
-            env: Environment::new("dev".to_string()),
-            build: Build::new("feat.branch.108".to_string()),
-            commit: Commit::new("c11e2d041c9b4ca66e241f8429e9a2876a8e0b18".to_string()),
-        };
+        let versioned = StubVersion::new(
+            Environment::new("dev".to_string()),
+            Build::new("feat.branch.108".to_string()),
+            Commit::new("c11e2d041c9b4ca66e241f8429e9a2876a8e0b18".to_string()),
+        );
         let database_health_checker = StubDependencyHealthChecker {
             dependency: Dependency::Database,
             status: Status::Ok,
@@ -92,11 +92,7 @@ mod tests {
         let env = Environment::new("dev".to_string());
         let build = Build::new("feat.branch.108".to_string());
         let commit = Commit::new("c11e2d041c9b4ca66e241f8429e9a2876a8e0b18".to_string());
-        let versioned = test_kit::StubVersion {
-            env: env.clone(),
-            build: build.clone(),
-            commit: commit.clone(),
-        };
+        let versioned = StubVersion::new(env.clone(), build.clone(), commit.clone());
         let database_health_checker = StubDependencyHealthChecker {
             dependency: Dependency::Database,
             status: Status::Ok,

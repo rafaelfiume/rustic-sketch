@@ -39,12 +39,10 @@ impl warp::reject::Reject for HealthCheckError {}
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::health_check::service_status::{
-        ServiceStatus,
-    };
+    use crate::health_check::service_status::ServiceStatus;
     use crate::health_check::test_kit::StubHealthChecker;
-    use crate::health_check::version;
-    use crate::health_check::version::{Build, Commit, Environment};
+    use crate::health_check::version::test_kit::StubVersion;
+    use crate::health_check::version::{Build, Commit, Environment, Versioned};
     use crate::health_status::model::ServiceStatusPayload;
     use serde_json::Value;
 
@@ -68,11 +66,12 @@ mod tests {
 
     #[tokio::test]
     async fn status_returns_version() {
-        let version = version::test_kit::current_version(
+        let version = StubVersion::new(
             Environment::new("dev".to_string()),
             Build::new("feat.branch.108".to_string()),
             Commit::new("c11e2d041c9b4ca66e241f8429e9a2876a8e0b18".to_string()),
         )
+        .version()
         .unwrap();
         let service_status = ServiceStatus::new(version, Vec::new());
         let health_checker = Arc::new(StubHealthChecker {

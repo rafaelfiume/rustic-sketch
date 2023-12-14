@@ -1,5 +1,3 @@
-extern crate derive_more;
-
 use derive_more::Constructor;
 use derive_more::Display;
 use std::error::Error;
@@ -17,29 +15,6 @@ pub struct Version {
     commit: Commit,
 }
 impl Version {
-    // TODO make it async
-    pub fn current_version(
-        environment: Environment,
-        path: &String,
-    ) -> Result<Version, VersionLoadError> {
-        let content = fs::read_to_string(path).map_err(|e| VersionLoadError {
-            message: e.to_string(),
-        })?;
-        let mut lines = content.lines();
-        let build = lines.next().ok_or(VersionLoadError {
-            message: "No build number specified in 'rustic.version'".to_string(),
-        })?;
-        let commit = lines.next().ok_or(VersionLoadError {
-            message: "No commit hash specified in 'rustic.version'".to_string(),
-        })?;
-        let version = Version {
-            env: environment,
-            build: Build::new(build.to_owned()),
-            commit: Commit::new(commit.to_owned()),
-        };
-        Ok(version)
-    }
-
     // - we need to use the `&` in front of the self shorthand to indicate that this method borrows the Self instance
     // - `&self` is appropriate here since we don't want to take ownership, and only read the data in the struct
     // - `&mut self` would be appropriate if we wanted to change the instance we are calling the method from
@@ -113,10 +88,11 @@ pub(crate) mod test_kit {
 
     // ** Stubs ** //
 
+    #[derive(Constructor)]
     pub struct StubVersion {
-        pub env: Environment,
-        pub build: Build,
-        pub commit: Commit,
+        env: Environment,
+        build: Build,
+        commit: Commit,
     }
     impl Versioned for StubVersion {
         fn version(&self) -> Result<Version, VersionLoadError> {
@@ -128,22 +104,13 @@ pub(crate) mod test_kit {
         }
     }
 
-    // TODO Replace this by StubVersion?
-    pub fn current_version(
-        env: Environment,
-        build: Build,
-        commit: Commit,
-    ) -> Result<Version, VersionLoadError> {
-        Ok(Version { env, build, commit })
-    }
-
     // ** Generators **//
 
     prop_compose! {
         // The generated function will take the fst parameter list as arguments
         // Strategies parameters are defined in the snd argument list
         pub fn arb_version()(env in arb_env(), build in arb_build(), commit in arb_commit()) -> Version {
-          current_version(env, build, commit).unwrap()
+          StubVersion::new(env, build, commit).version().unwrap()
         }
     }
 
