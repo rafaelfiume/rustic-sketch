@@ -26,11 +26,12 @@
 ### cargo
 
 - `cargo build [--release]`
-- `cargo new hello_world`
+- `cargo fix --edition`
 - `cargo fmt`
+- `cargo new hello_world`
 - `cargo run`
-- `cargo test -- --show-output`    // so it doesn't hide output of sucessful tets
-- `cargo test --test version_test` // integration test
+- `cargo test -- --show-output`    // Show output of sucessful tests
+- `cargo test --test version_test` // Integration test + specific test
 
 ## Useful Resources
 

@@ -116,6 +116,8 @@ pub(crate) mod test_kit {
     use proptest::prelude::*;
     use std::collections::HashSet;
 
+    // ** Generators ** //
+
     pub fn arb_healthy_dependency() -> impl Strategy<Value = DependencyStatus> {
         arb_service_dependency().prop_filter("Ok", |d| d.status == Status::Ok)
     }

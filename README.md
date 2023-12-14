@@ -2,6 +2,8 @@
 
 ## Rust in Action
 
+Examples of various Rust features in action.
+
 ### The Language
 
 #### ? Operator
@@ -43,6 +45,9 @@
 
 ### Tests
  - [Integration test](tests/version_test.rs)
- - [Property-based test](). Also see (proptest! macro doesn't play nice with tokio::test)[https://github.com/proptest-rs/proptest/issues/179].
+ - Property-based test:
+   - [prop_compose!](src/health_check/version.rs)
+   - [proptest! macro doesn't play nice with tokio::test](https://github.com/proptest-rs/proptest/issues/179).
+
  - [Table-driven test](tests/public_contracts.rs)
  - [Unit test](src/routes/health_status.rs)

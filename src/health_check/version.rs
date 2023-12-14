@@ -128,6 +128,7 @@ pub(crate) mod test_kit {
         }
     }
 
+    // TODO Replace this by StubVersion?
     pub fn current_version(
         env: Environment,
         build: Build,
@@ -137,8 +138,6 @@ pub(crate) mod test_kit {
     }
 
     // ** Generators **//
-
-    // about boxing or not see: https://proptest-rs.github.io/proptest/proptest/tutorial/transforming-strategies.html
 
     prop_compose! {
         // The generated function will take the fst parameter list as arguments
