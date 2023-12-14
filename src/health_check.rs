@@ -120,8 +120,9 @@ pub(crate) mod test_kit {
 
     /* Stubs */
 
+    #[derive(Constructor)]
     pub struct StubHealthChecker {
-        pub service_status: Result<ServiceStatus, HealthCheckError>,
+        service_status: Result<ServiceStatus, HealthCheckError>,
     }
     #[async_trait]
     impl HealthChecker for StubHealthChecker {

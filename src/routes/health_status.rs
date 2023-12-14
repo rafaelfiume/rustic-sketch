@@ -74,9 +74,7 @@ mod tests {
         .version()
         .unwrap();
         let service_status = ServiceStatus::new(version, Vec::new());
-        let health_checker = Arc::new(StubHealthChecker {
-            service_status: Ok(service_status.clone()),
-        });
+        let health_checker = Arc::new(StubHealthChecker::new(Ok(service_status.clone())));
 
         let status = check_health(health_checker);
         let result = warp::test::request()
