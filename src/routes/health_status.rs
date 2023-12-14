@@ -1,33 +1,29 @@
-pub mod model;
-
-use std::future::Future;
-
-use crate::health_check::service_status::{Dependency, DependencyStatus, ServiceStatus, Status};
-use crate::health_check::version::{Environment, Version, VersionLoadError};
+use crate::health_check::{HealthCheckError, HealthChecker};
 use crate::health_status::model::payload_converters::AsPayload;
+use std::sync::Arc;
 use warp::reject::{self, Rejection};
 use warp::reply::Reply;
 use warp::Filter;
 
-pub fn routes() -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
-    ping().or(health_check(do_check_health))
+pub mod model;
+
+pub fn routes(
+    health_checker: Arc<dyn HealthChecker + Send + Sync>,
+) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
+    ping().or(check_health(health_checker))
 }
 
 fn ping() -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
     warp::path("ping").map(|| warp::reply::json(&"pong"))
 }
 
-fn health_check<F, S>(
-    check_health: F,
-) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone
-where
-    F: Fn() -> S + Clone + Send + Sync,
-    S: Future<Output = Result<ServiceStatus, VersionLoadError>> + Send,
-{
+fn check_health(
+    health_checker: Arc<dyn HealthChecker + Send + Sync>,
+) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
     warp::path("status").and_then(move || {
-        let fnn = check_health.clone();
+        let fnn = health_checker.clone();
         async move {
-            match fnn().await {
+            match fnn.check().await {
                 Ok(service_health) => Ok(warp::reply::json(&service_health.as_payload())),
                 Err(e) => Err(reject::custom(e)),
             }
@@ -35,22 +31,18 @@ where
     })
 }
 
-async fn do_check_health() -> Result<ServiceStatus, VersionLoadError> {
-    // TODO Hardcoded for now
-    let env = Environment::new("dev".to_string());
-    let version = Version::current_version(env, &"rustic.version".to_string())?;
-    let dependencies = vec![DependencyStatus::new(Dependency::Database, Status::Ok)];
-    Ok(ServiceStatus::new(version, dependencies))
-}
-
 // TODO Wrap a json payload?
 //struct CustomJsonRejection(reply::Json);
 
-impl warp::reject::Reject for VersionLoadError {}
+impl warp::reject::Reject for HealthCheckError {}
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::health_check::service_status::{
+        Dependency, DependencyStatus, ServiceStatus, Status,
+    };
+    use crate::health_check::test_kit::StubHealthChecker;
     use crate::health_check::version;
     use crate::health_check::version::{Build, Commit, Environment};
     use crate::health_status::model::ServiceStatusPayload;
@@ -83,13 +75,11 @@ mod tests {
         )
         .unwrap();
         let service_status = ServiceStatus::new(version, Vec::new());
-        let primed_service_status = service_status.clone();
-        let check_health_returns_ok = move || {
-            let c = primed_service_status.clone();
-            async { Ok::<ServiceStatus, VersionLoadError>(c) }
-        };
-        let status = health_check(check_health_returns_ok);
+        let health_checker = Arc::new(StubHealthChecker {
+            service_status: Ok(service_status.clone()),
+        });
 
+        let status = check_health(health_checker);
         let result = warp::test::request()
             .method("GET")
             .path("/status")
@@ -100,4 +90,6 @@ mod tests {
         let obtained: ServiceStatusPayload = serde_json::from_slice(result.body()).unwrap();
         assert_eq!(obtained, service_status.as_payload());
     }
+
+    // TODO Test sad path
 }

@@ -58,11 +58,11 @@ impl Version {
     }
 }
 
-struct VersionFromFile {
+#[derive(Constructor)]
+pub struct VersionFromFile {
     env: Environment,
     path: String,
 }
-
 impl Versioned for VersionFromFile {
     fn version(&self) -> Result<Version, VersionLoadError> {
         let content = fs::read_to_string(&self.path).map_err(|e| VersionLoadError {

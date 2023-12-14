@@ -3,6 +3,7 @@ use self::{
     version::Versioned,
 };
 use async_trait::async_trait;
+use derive_more::Constructor;
 use derive_more::Display;
 use futures::future::join_all;
 use std::error::Error;
@@ -20,7 +21,8 @@ pub trait DependencyHealthChecker {
     async fn check(&self) -> DependencyStatus;
 }
 
-struct RusticSketchHealthChecker {
+#[derive(Constructor)]
+pub struct RusticSketchHealthChecker {
     versioned: Box<dyn Versioned + Send + Sync>,
     dependency_health_checkers: Vec<Box<dyn DependencyHealthChecker + Sync + Send>>,
 }
@@ -43,7 +45,7 @@ impl HealthChecker for RusticSketchHealthChecker {
     }
 }
 
-#[derive(Debug, Display)]
+#[derive(Clone, Debug, Display)]
 pub struct HealthCheckError {
     pub message: String,
 }
@@ -119,6 +121,18 @@ pub(crate) mod test_kit {
         service_status::{Dependency, Status},
         *,
     };
+
+    /* Stubs */
+
+    pub struct StubHealthChecker {
+        pub service_status: Result<ServiceStatus, HealthCheckError>,
+    }
+    #[async_trait]
+    impl HealthChecker for StubHealthChecker {
+        async fn check(&self) -> Result<ServiceStatus, HealthCheckError> {
+            self.service_status.clone()
+        }
+    }
 
     pub struct StubDependencyHealthChecker {
         pub dependency: Dependency,
