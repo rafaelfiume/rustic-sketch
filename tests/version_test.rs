@@ -6,7 +6,7 @@ use std::error::Error;
 use std::fs;
 
 #[test]
-fn current_service_version() {
+fn retrieves_service_version() {
     let env = Environment::new("dev".to_string());
     let build = Build::new("snapshot".to_string());
     let commit = Commit::new("d1a1efeba1806cd2d0fe4164162272afb0f121f4".to_string());
@@ -22,7 +22,7 @@ fn current_service_version() {
 }
 
 #[test]
-fn current_service_version_returns_error_when_there_is_no_version_file() {
+fn returns_error_when_there_is_no_version_file() {
     let env = Environment::new("dev".to_string());
     let version_file_path = "unknown.version.file".to_string();
 

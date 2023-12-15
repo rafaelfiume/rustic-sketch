@@ -4,7 +4,7 @@ use health_check::{
     version::{Environment, VersionFromFile},
     RusticSketchHealthChecker,
 };
-use routes::health_status; // TODO Do I like this name?
+use routes::health_status;
 use warp::Filter;
 
 pub mod health_check; // publicly re-exported so it can be used in integration tests

@@ -45,9 +45,9 @@ impl HealthChecker for RusticSketchHealthChecker {
     }
 }
 
-#[derive(Clone, Debug, Display)]
+#[derive(Clone, Constructor, Debug, Display)]
 pub struct HealthCheckError {
-    pub message: String,
+    message: String,
 }
 impl Error for HealthCheckError {}
 
@@ -60,7 +60,7 @@ mod tests {
     use crate::health_check::version::{Build, Commit, Environment};
 
     #[tokio::test]
-    async fn service_status_is_ok() {
+    async fn returns_service_status() {
         let versioned = StubVersion::new(
             Environment::new("dev".to_string()),
             Build::new("feat.branch.108".to_string()),

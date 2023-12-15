@@ -65,7 +65,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn status_returns_version() {
+    async fn status_checks_service_health() {
         let version = StubVersion::new(
             Environment::new("dev".to_string()),
             Build::new("feat.branch.108".to_string()),
@@ -88,5 +88,20 @@ mod tests {
         assert_eq!(obtained, service_status.as_payload());
     }
 
-    // TODO Test sad path
+    #[tokio::test]
+    async fn status_fails_with_error() {
+        let health_checker = Arc::new(StubHealthChecker::new(Err(HealthCheckError::new(
+            "something went wrong".to_string(),
+        ))));
+
+        let status = check_health(health_checker);
+        let result = warp::test::request()
+            .method("GET")
+            .path("/status")
+            .reply(&status)
+            .await;
+
+        assert_eq!(result.status(), 500);
+        // TODO Error payload
+    }
 }
