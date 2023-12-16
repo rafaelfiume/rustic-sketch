@@ -5,15 +5,15 @@ use rustic_sketch::health_check::version::{
 use std::error::Error;
 use std::fs;
 
-#[test]
-fn retrieves_service_version() {
+#[tokio::test]
+async fn retrieves_service_version() {
     let env = Environment::new("dev".to_string());
     let build = Build::new("snapshot".to_string());
     let commit = Commit::new("d1a1efeba1806cd2d0fe4164162272afb0f121f4".to_string());
     let version_file_path = version_file_exists_in_location(&build, &commit).unwrap();
 
     let versioned = VersionFromFile::new(env.clone(), version_file_path.clone());
-    let result = versioned.version().unwrap();
+    let result = versioned.version().await.unwrap();
 
     assert_eq!(result.env(), &env);
     assert_eq!(result.build(), &build);
@@ -21,26 +21,26 @@ fn retrieves_service_version() {
     fs::remove_file(&version_file_path).expect("error when removing version file")
 }
 
-#[test]
-fn returns_error_when_there_is_no_version_file() {
+#[tokio::test]
+async fn returns_error_when_there_is_no_version_file() {
     let env = Environment::new("dev".to_string());
     let version_file_path = "unknown.version.file".to_string();
 
     let versioned = VersionFromFile::new(env.clone(), version_file_path);
-    let result = versioned.version();
+    let result = versioned.version().await;
 
     // TODO Check actual error
     assert_err!(result);
 }
 
-#[test]
-fn current_service_version_returns_error_when_version_file_is_empty() {
+#[tokio::test]
+async fn current_service_version_returns_error_when_version_file_is_empty() {
     // look mama, no version file, it will boom!
     let env = Environment::new("dev".to_string());
     let version_file_path = empty_version_file_path("rustic.version".to_string()).unwrap();
 
     let versioned = VersionFromFile::new(env.clone(), version_file_path.clone());
-    let result = versioned.version();
+    let result = versioned.version().await;
 
     //assert_ok!(result); // uncomment it to see the failing test with msg:
     // `assertion failed, expected Ok(..), got Err("No build number specified in 'rustic.version'")`

@@ -72,6 +72,7 @@ mod tests {
             Commit::new("c11e2d041c9b4ca66e241f8429e9a2876a8e0b18".to_string()),
         )
         .version()
+        .await
         .unwrap();
         let service_status = ServiceStatus::new(version, Vec::new());
         let health_checker = Arc::new(StubHealthChecker::new(Ok(service_status.clone())));

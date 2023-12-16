@@ -1,11 +1,12 @@
+use async_trait::async_trait;
 use derive_more::Constructor;
 use derive_more::Display;
 use std::error::Error;
 use std::fs;
 
-// TODO Async
+#[async_trait]
 pub trait Versioned {
-    fn version(&self) -> Result<Version, VersionLoadError>;
+    async fn version(&self) -> Result<Version, VersionLoadError>;
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -38,8 +39,9 @@ pub struct VersionFromFile {
     env: Environment,
     path: String,
 }
+#[async_trait]
 impl Versioned for VersionFromFile {
-    fn version(&self) -> Result<Version, VersionLoadError> {
+    async fn version(&self) -> Result<Version, VersionLoadError> {
         let content = fs::read_to_string(&self.path).map_err(|e| VersionLoadError {
             message: e.to_string(),
         })?;
@@ -94,8 +96,18 @@ pub(crate) mod test_kit {
         build: Build,
         commit: Commit,
     }
+    impl From<StubVersion> for Version {
+        fn from(stub: StubVersion) -> Self {
+            Version {
+                env: stub.env,
+                build: stub.build,
+                commit: stub.commit,
+            }
+        }
+    }
+    #[async_trait]
     impl Versioned for StubVersion {
-        fn version(&self) -> Result<Version, VersionLoadError> {
+        async fn version(&self) -> Result<Version, VersionLoadError> {
             Ok(Version {
                 env: self.env.clone(),
                 build: self.build.clone(),
@@ -110,7 +122,7 @@ pub(crate) mod test_kit {
         // The generated function will take the fst parameter list as arguments
         // Strategies parameters are defined in the snd argument list
         pub fn arb_version()(env in arb_env(), build in arb_build(), commit in arb_commit()) -> Version {
-          StubVersion::new(env, build, commit).version().unwrap()
+          StubVersion::new(env, build, commit).into()
         }
     }
 

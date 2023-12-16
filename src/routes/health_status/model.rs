@@ -6,7 +6,7 @@ use serde::{ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer}
 
 use self::payload_converters::AsPayload;
 
-// TODO Move it to a separate file
+// TODO Implement From? Move it to a separate file?
 pub mod payload_converters {
     pub trait AsPayload<T> {
         fn as_payload(&self) -> T;

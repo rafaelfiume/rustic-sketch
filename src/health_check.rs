@@ -30,9 +30,13 @@ pub struct RusticSketchHealthChecker {
 #[async_trait]
 impl HealthChecker for RusticSketchHealthChecker {
     async fn check(&self) -> Result<ServiceStatus, HealthCheckError> {
-        let version = self.versioned.version().map_err(|err| HealthCheckError {
-            message: format!("Failed to load version: {}", err.message),
-        })?;
+        let version = self
+            .versioned
+            .version()
+            .await
+            .map_err(|err| HealthCheckError {
+                message: format!("Failed to load version: {}", err.message),
+            })?;
 
         let futures: Vec<_> = self
             .dependency_health_checkers
