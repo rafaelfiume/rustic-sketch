@@ -70,14 +70,10 @@ mod tests {
             Build::new("feat.branch.108".to_string()),
             Commit::new("c11e2d041c9b4ca66e241f8429e9a2876a8e0b18".to_string()),
         );
-        let database_health_checker = StubDependencyHealthChecker {
-            dependency: Dependency::Database,
-            status: Status::Ok,
-        };
-        let snitch_health_checker = StubDependencyHealthChecker {
-            dependency: Dependency::Snitch,
-            status: Status::Ok,
-        };
+        let database_health_checker =
+            StubDependencyHealthChecker::new(Dependency::Database, Status::Ok);
+        let snitch_health_checker =
+            StubDependencyHealthChecker::new(Dependency::Snitch, Status::Ok);
 
         let health_checker = RusticSketchHealthChecker {
             versioned: Box::new(versioned),
@@ -97,10 +93,8 @@ mod tests {
         let build = Build::new("feat.branch.108".to_string());
         let commit = Commit::new("c11e2d041c9b4ca66e241f8429e9a2876a8e0b18".to_string());
         let versioned = StubVersion::new(env.clone(), build.clone(), commit.clone());
-        let database_health_checker = StubDependencyHealthChecker {
-            dependency: Dependency::Database,
-            status: Status::Ok,
-        };
+        let database_health_checker =
+            StubDependencyHealthChecker::new(Dependency::Database, Status::Ok);
 
         let health_checker = RusticSketchHealthChecker {
             versioned: Box::new(versioned),
@@ -135,9 +129,10 @@ pub(crate) mod test_kit {
         }
     }
 
+    #[derive(Constructor)]
     pub struct StubDependencyHealthChecker {
-        pub dependency: Dependency,
-        pub status: Status,
+        dependency: Dependency,
+        status: Status,
     }
     #[async_trait]
     impl DependencyHealthChecker for StubDependencyHealthChecker {
