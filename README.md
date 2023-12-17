@@ -2,6 +2,8 @@
 
 ## Rust in Action
 
+Examples of various Rust features in action.
+
 ### The Language
 
 #### ? Operator
@@ -11,6 +13,10 @@
 
 #### Async Closures
   - ???
+
+#### Getters
+  - [Version]()
+  - For derived getters, see `getset` crait.
 
 #### Iterators
  - [chars()](tests/test_kit.rs)
@@ -30,8 +36,17 @@
 ### Interesting Crates
 
 #### derive-more
- - [Display]
- - [Constructor]
+ - [Clone]()
+ - [Constructor]()
+ - [Debug]()
+ - [Display]()
+ - [Eq]()
+ - [Error]()
+ - [Hash]()
+ - [PartialEq]()
+
+#### getset
+ - [#[get = "pub"]]()
 
 #### Serde
  - [Derived Serialization and Deserialization](src/routes/health_status/model.rs)
@@ -43,6 +58,9 @@
 
 ### Tests
  - [Integration test](tests/version_test.rs)
- - [Property-based test](). Also see (proptest! macro doesn't play nice with tokio::test)[https://github.com/proptest-rs/proptest/issues/179].
+ - Property-based test:
+   - [prop_compose!](src/health_check/version.rs)
+   - [proptest! macro doesn't play nice with tokio::test](https://github.com/proptest-rs/proptest/issues/179).
+
  - [Table-driven test](tests/public_contracts.rs)
  - [Unit test](src/routes/health_status.rs)

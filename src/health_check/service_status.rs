@@ -57,7 +57,6 @@ pub struct DependencyStatus {
     dependency: Dependency,
     status: Status,
 }
-
 impl DependencyStatus {
     pub fn dependency(&self) -> &Dependency {
         &self.dependency
@@ -116,6 +115,8 @@ pub(crate) mod test_kit {
     use proptest::collection::vec;
     use proptest::prelude::*;
     use std::collections::HashSet;
+
+    // ** Generators ** //
 
     pub fn arb_healthy_dependency() -> impl Strategy<Value = DependencyStatus> {
         arb_service_dependency().prop_filter("Ok", |d| d.status == Status::Ok)

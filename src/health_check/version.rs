@@ -1,9 +1,14 @@
-extern crate derive_more;
-
+use async_trait::async_trait;
 use derive_more::Constructor;
 use derive_more::Display;
-use std::error::Error;
+use derive_more::Error;
+use getset::Getters;
 use std::fs;
+
+#[async_trait]
+pub trait Versioned {
+    async fn version(&self) -> Result<Version, VersionLoadError>;
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Version {
@@ -12,28 +17,6 @@ pub struct Version {
     commit: Commit,
 }
 impl Version {
-    pub fn current_version(
-        environment: Environment,
-        path: &String,
-    ) -> Result<Version, VersionLoadError> {
-        let content = fs::read_to_string(path).map_err(|e| VersionLoadError {
-            message: e.to_string(),
-        })?;
-        let mut lines = content.lines();
-        let build = lines.next().ok_or(VersionLoadError {
-            message: "No build number specified in 'rustic.version'".to_string(),
-        })?;
-        let commit = lines.next().ok_or(VersionLoadError {
-            message: "No commit hash specified in 'rustic.version'".to_string(),
-        })?;
-        let version = Version {
-            env: environment,
-            build: Build::new(build.to_owned()),
-            commit: Commit::new(commit.to_owned()),
-        };
-        Ok(version)
-    }
-
     // - we need to use the `&` in front of the self shorthand to indicate that this method borrows the Self instance
     // - `&self` is appropriate here since we don't want to take ownership, and only read the data in the struct
     // - `&mut self` would be appropriate if we wanted to change the instance we are calling the method from
@@ -52,12 +35,39 @@ impl Version {
     }
 }
 
+#[derive(Constructor)]
+pub struct VersionFromFile {
+    env: Environment,
+    path: String,
+}
+#[async_trait]
+impl Versioned for VersionFromFile {
+    async fn version(&self) -> Result<Version, VersionLoadError> {
+        let content = fs::read_to_string(&self.path).map_err(|e| VersionLoadError {
+            message: e.to_string(),
+        })?;
+        let mut lines = content.lines();
+        let build = lines.next().ok_or(VersionLoadError {
+            message: "No build number specified in 'rustic.version'".to_string(),
+        })?;
+        let commit = lines.next().ok_or(VersionLoadError {
+            message: "No commit hash specified in 'rustic.version'".to_string(),
+        })?;
+        let version = Version {
+            env: self.env.to_owned(),
+            build: Build::new(build.to_owned()),
+            commit: Commit::new(commit.to_owned()),
+        };
+        Ok(version)
+    }
+}
+
 // TODO use anyhow or thiserror to deal with errors?
-#[derive(Debug, Display)]
+#[derive(Debug, Display, Error, Getters)]
 pub struct VersionLoadError {
+    #[getset(get = "pub")]
     message: String,
 }
-impl Error for VersionLoadError {}
 
 #[derive(Clone, Constructor, Debug, Display, PartialEq)]
 // The newtype pattern.
@@ -81,23 +91,35 @@ pub(crate) mod test_kit {
 
     // ** Stubs ** //
 
-    pub fn current_version(
+    #[derive(Clone, Constructor)]
+    pub struct StubVersion {
         env: Environment,
         build: Build,
         commit: Commit,
-    ) -> Result<Version, VersionLoadError> {
-        Ok(Version { env, build, commit })
+    }
+    impl From<StubVersion> for Version {
+        fn from(stub: StubVersion) -> Self {
+            Version {
+                env: stub.env,
+                build: stub.build,
+                commit: stub.commit,
+            }
+        }
+    }
+    #[async_trait]
+    impl Versioned for StubVersion {
+        async fn version(&self) -> Result<Version, VersionLoadError> {
+            Ok(self.clone().into())
+        }
     }
 
     // ** Generators **//
-
-    // about boxing or not see: https://proptest-rs.github.io/proptest/proptest/tutorial/transforming-strategies.html
 
     prop_compose! {
         // The generated function will take the fst parameter list as arguments
         // Strategies parameters are defined in the snd argument list
         pub fn arb_version()(env in arb_env(), build in arb_build(), commit in arb_commit()) -> Version {
-          current_version(env, build, commit).unwrap()
+          StubVersion::new(env, build, commit).into()
         }
     }
 
