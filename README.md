@@ -14,6 +14,10 @@ Examples of various Rust features in action.
 #### Async Closures
   - ???
 
+#### Getters
+  - [Version]()
+  - For derived getters, see `getset` crait.
+
 #### Iterators
  - [chars()](tests/test_kit.rs)
  - [try_for_each()](tests/test_kit.rs)
@@ -32,8 +36,17 @@ Examples of various Rust features in action.
 ### Interesting Crates
 
 #### derive-more
- - [Display]
- - [Constructor]
+ - [Clone]()
+ - [Constructor]()
+ - [Debug]()
+ - [Display]()
+ - [Eq]()
+ - [Error]()
+ - [Hash]()
+ - [PartialEq]()
+
+#### getset
+ - [#[get = "pub"]]()
 
 #### Serde
  - [Derived Serialization and Deserialization](src/routes/health_status/model.rs)

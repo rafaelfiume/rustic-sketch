@@ -5,8 +5,9 @@ use self::{
 use async_trait::async_trait;
 use derive_more::Constructor;
 use derive_more::Display;
+use derive_more::Error;
 use futures::future::join_all;
-use std::error::Error;
+use getset::Getters;
 
 pub mod service_status;
 pub mod version;
@@ -35,7 +36,7 @@ impl HealthChecker for RusticSketchHealthChecker {
             .version()
             .await
             .map_err(|err| HealthCheckError {
-                message: format!("Failed to load version: {}", err.message),
+                message: format!("Failed to load version: {}", err.message()),
             })?;
 
         let futures: Vec<_> = self
@@ -49,11 +50,11 @@ impl HealthChecker for RusticSketchHealthChecker {
     }
 }
 
-#[derive(Clone, Constructor, Debug, Display)]
+#[derive(Clone, Constructor, Debug, Display, Error, Getters)]
 pub struct HealthCheckError {
+    #[getset(get = "pub")]
     message: String,
 }
-impl Error for HealthCheckError {}
 
 #[cfg(test)]
 mod tests {

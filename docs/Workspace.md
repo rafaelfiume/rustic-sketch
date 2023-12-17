@@ -39,10 +39,13 @@ Build-dependencies:
  - [git2-rs](https://crates.io/crates/git2)
 
 Dependencies:
+ - [async-trait - crates.io](https://crates.io/crates/async-trait)
+ - [derive-more - crates.io](https://crates.io/crates/derive_more)
+ - [futures - crates.io](https://crates.io/crates/futures)
+ - [get-set - crates.io](https://crates.io/crates/getset)
  - [Serde](https://serde.rs/)
  - [Serde-json - crates.io](https://crates.io/crates/serde_json)
  - [SQLx - crates.io](https://crates.io/crates/sqlx)
- - [derive(Error) - crates.io](https://crates.io/crates/thiserror) // Shall I use it?
  - [Tokio](https://tokio.rs/tokio/tutorial)
  - [Tokio - crates.io](https://crates.io/crates/tokio)
  - [warp](https://docs.rs/warp/latest/warp/test/index.html)

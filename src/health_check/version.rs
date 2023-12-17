@@ -1,7 +1,8 @@
 use async_trait::async_trait;
 use derive_more::Constructor;
 use derive_more::Display;
-use std::error::Error;
+use derive_more::Error;
+use getset::Getters;
 use std::fs;
 
 #[async_trait]
@@ -62,11 +63,11 @@ impl Versioned for VersionFromFile {
 }
 
 // TODO use anyhow or thiserror to deal with errors?
-#[derive(Debug, Display)]
+#[derive(Debug, Display, Error, Getters)]
 pub struct VersionLoadError {
-    pub message: String,
+    #[getset(get = "pub")]
+    message: String,
 }
-impl Error for VersionLoadError {}
 
 #[derive(Clone, Constructor, Debug, Display, PartialEq)]
 // The newtype pattern.
