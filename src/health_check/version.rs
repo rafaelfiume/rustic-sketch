@@ -91,7 +91,7 @@ pub(crate) mod test_kit {
 
     // ** Stubs ** //
 
-    #[derive(Constructor)]
+    #[derive(Clone, Constructor)]
     pub struct StubVersion {
         env: Environment,
         build: Build,
@@ -109,11 +109,7 @@ pub(crate) mod test_kit {
     #[async_trait]
     impl Versioned for StubVersion {
         async fn version(&self) -> Result<Version, VersionLoadError> {
-            Ok(Version {
-                env: self.env.clone(),
-                build: self.build.clone(),
-                commit: self.commit.clone(),
-            })
+            Ok(self.clone().into())
         }
     }
 
