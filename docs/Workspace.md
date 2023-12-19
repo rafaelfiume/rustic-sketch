@@ -56,6 +56,7 @@ Dev-dependencies:
  - [claims - crates.io](https://crates.io/crates/claims)
  - [Proptest](https://proptest-rs.github.io/proptest/proptest/getting-started.html)
  - [Proptest - crates.io](https://crates.io/crates/proptest)
+ - [testcontainers](https://crates.io/crates/testcontainers)
 
 Docker:
   - [5x Faster Rust Docker Builds with cargo-chef](https://www.lpalmieri.com/posts/fast-rust-docker-builds/)

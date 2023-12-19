@@ -1,14 +1,15 @@
-use std::sync::Arc;
-
 use health_check::{
     version::{Environment, VersionFromFile},
     RusticSketchHealthChecker,
 };
 use routes::health_status;
+use std::sync::Arc;
 use warp::Filter;
 
-pub mod health_check; // publicly re-exported so it can be used in integration tests
+// publicly re-exported so it can be used in main.rs or integration tests
+pub mod health_check;
 pub mod routes;
+pub mod store;
 
 pub async fn run() {
     let hello_route = warp::path!("hello" / String).map(|name| format!("Hello, {}!", name));
