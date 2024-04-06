@@ -45,7 +45,7 @@ impl PostgresStore {
 // TODO Think about errors
 #[derive(Debug, Display, Error, Getters)]
 pub struct PostgresStoreError {
-    #[getset(get = "pub")]
+    #[getset(get)]
     message: String,
 }
 
