@@ -14,7 +14,7 @@ async fn dependency_status_is_ok_when_database_is_available() {
     let postgres = Postgres::default();
     let container = docker.run(postgres.clone());
     let config = postgres::DatabaseConfig::new(
-        "0.0.0.0".to_string(),
+        "127.0.0.1".to_string(),
         container.get_host_port_ipv4(*postgres.port()),
         postgres.name().to_string(),
         postgres.user().to_string(),
@@ -34,7 +34,7 @@ async fn dependency_status_is_degraded_when_database_is_not_available() {
     let postgres = Postgres::default();
     let container = docker.run(postgres.clone());
     let config = postgres::DatabaseConfig::new(
-        "0.0.0.0".to_string(),
+        "127.0.0.1".to_string(),
         container.get_host_port_ipv4(*postgres.port()),
         postgres.name().to_string(),
         postgres.user().to_string(),
