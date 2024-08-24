@@ -1,21 +1,23 @@
+use std::borrow::Cow;
 use std::collections::HashMap;
 
 use getset::Getters;
 use rustic_sketch::health_check::{service_status::Status, DependencyHealthChecker};
 use rustic_sketch::store::postgres;
-use testcontainers::{
-    clients::{self},
-    core::{Image, WaitFor},
-};
+use testcontainers::core::{Image, WaitFor};
+use testcontainers::runners::AsyncRunner;
 
 #[tokio::test]
 async fn dependency_status_is_ok_when_database_is_available() {
-    let docker = clients::Cli::default();
     let postgres = Postgres::default();
-    let container = docker.run(postgres.clone());
+    let container = postgres.clone().start().await.unwrap();
+    let exposed_port = container
+        .get_host_port_ipv4(*postgres.port())
+        .await
+        .unwrap();
     let config = postgres::DatabaseConfig::new(
         "127.0.0.1".to_string(),
-        container.get_host_port_ipv4(*postgres.port()),
+        exposed_port,
         postgres.name().to_string(),
         postgres.user().to_string(),
         postgres.password().to_string(),
@@ -30,20 +32,24 @@ async fn dependency_status_is_ok_when_database_is_available() {
 
 #[tokio::test]
 async fn dependency_status_is_degraded_when_database_is_not_available() {
-    let docker = clients::Cli::default();
     let postgres = Postgres::default();
-    let container = docker.run(postgres.clone());
+    let container = postgres.clone().start().await.unwrap();
+    let exposed_port = container
+        .get_host_port_ipv4(*postgres.port())
+        .await
+        .unwrap();
     let config = postgres::DatabaseConfig::new(
         "127.0.0.1".to_string(),
-        container.get_host_port_ipv4(*postgres.port()),
+        exposed_port,
         postgres.name().to_string(),
         postgres.user().to_string(),
         postgres.password().to_string(),
         5,
     );
-
+    // database is running to avoid a connection timeout...
     let store = postgres::PostgresStore::new(config).await.unwrap();
-    container.stop();
+    container.stop().await.unwrap();
+
     let result = store.check().await;
 
     assert_eq!(*result.status(), Status::Degraded);
@@ -99,14 +105,13 @@ impl Default for Postgres {
 
 impl Image for Postgres {
     // see https://github.com/testcontainers/testcontainers-rs-modules-community/blob/main/src/postgres/mod.rs
-    type Args = ();
 
-    fn name(&self) -> String {
-        "postgres".to_string()
+    fn name(&self) -> &str {
+        "postgres"
     }
 
-    fn tag(&self) -> String {
-        self.tag.to_string()
+    fn tag(&self) -> &str {
+        self.tag.as_str()
     }
 
     fn ready_conditions(&self) -> Vec<WaitFor> {
@@ -115,11 +120,9 @@ impl Image for Postgres {
         )]
     }
 
-    fn env_vars(&self) -> Box<dyn Iterator<Item = (&String, &String)> + '_> {
-        Box::new(self.env_vars.iter())
-    }
-
-    fn expose_ports(&self) -> Vec<u16> {
-        vec![self.port]
+    fn env_vars(
+        &self,
+    ) -> impl IntoIterator<Item = (impl Into<Cow<'_, str>>, impl Into<Cow<'_, str>>)> {
+        &self.env_vars
     }
 }
