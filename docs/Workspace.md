@@ -26,13 +26,14 @@
 #### cargo
 
 - `cargo build [--release]`
-- `cargo fix --edition`
+- `cargo check` # quickly check the codebase (development mode)
+- `cargo clippy` # linting tool (qualily assurance)
+- `cargo fix [--edition] [--clippy] [--edition-idioms] [--dry-run]`
 - `cargo fmt`
 - `cargo new hello_world`
 - `cargo run`
 - `cargo test -- --show-output`    // Show output of sucessful tests
 - `cargo test --test version_test` // Integration test + specific test
-- `cargo clippy`
 
 ## Useful Resources
 
