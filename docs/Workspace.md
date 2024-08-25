@@ -15,15 +15,15 @@
 ## Useful Commands
 
 #### Docker:
- - `docker run --rm -p3030:3030 rafaelfiume/rustic-sketch:latest --name rustic`
+ - `docker-compose -f tools/stack/docker-compose.yml up --pull=always`
 
-### rustc & rustup
+#### rustc & rustup
 
 - `rustc --version [--verbose]
 - `rustup doc`
 - `rustup update`
 
-### cargo
+#### cargo
 
 - `cargo build [--release]`
 - `cargo fix --edition`
@@ -32,6 +32,7 @@
 - `cargo run`
 - `cargo test -- --show-output`    // Show output of sucessful tests
 - `cargo test --test version_test` // Integration test + specific test
+- `cargo clippy`
 
 ## Useful Resources
 
