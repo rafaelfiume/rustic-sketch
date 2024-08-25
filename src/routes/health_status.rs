@@ -1,5 +1,5 @@
+use self::model::ServiceStatusPayload;
 use crate::health_check::{HealthCheckError, HealthChecker};
-use crate::health_status::model::payload_converters::AsPayload;
 use std::sync::Arc;
 use warp::reject::{self, Rejection};
 use warp::reply::Reply;
@@ -24,7 +24,9 @@ fn check_health(
         let fnn = health_checker.clone();
         async move {
             match fnn.check().await {
-                Ok(service_health) => Ok(warp::reply::json(&service_health.as_payload())),
+                Ok(service_status) => Ok(warp::reply::json(&Into::<ServiceStatusPayload>::into(
+                    service_status,
+                ))),
                 Err(e) => Err(reject::custom(e)),
             }
         }
@@ -84,7 +86,7 @@ mod tests {
 
         assert_eq!(result.status(), 200);
         let obtained: ServiceStatusPayload = serde_json::from_slice(result.body()).unwrap();
-        assert_eq!(obtained, service_status.as_payload());
+        assert_eq!(obtained, service_status.into());
     }
 
     #[tokio::test]

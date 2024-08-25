@@ -4,15 +4,6 @@ use crate::health_check::{
 };
 use serde::{ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer};
 
-use self::payload_converters::AsPayload;
-
-// TODO Implement From? Move it to a separate file?
-pub mod payload_converters {
-    pub trait AsPayload<T> {
-        fn as_payload(&self) -> T;
-    }
-}
-
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct ServiceStatusPayload {
     #[serde(flatten)]
@@ -20,12 +11,16 @@ pub struct ServiceStatusPayload {
     status: Status,
     dependencies: Vec<DependencyStatusPayload>,
 }
-impl AsPayload<ServiceStatusPayload> for ServiceStatus {
-    fn as_payload(&self) -> ServiceStatusPayload {
+impl From<ServiceStatus> for ServiceStatusPayload {
+    fn from(value: ServiceStatus) -> ServiceStatusPayload {
         ServiceStatusPayload {
-            version: self.version().as_payload(),
-            status: self.status().clone(),
-            dependencies: self.dependencies().iter().map(|d| d.as_payload()).collect(),
+            version: value.version().clone().into(),
+            status: value.status().clone(),
+            dependencies: value
+                .dependencies()
+                .iter()
+                .map(|d| d.clone().into())
+                .collect(),
         }
     }
 }
@@ -36,12 +31,12 @@ pub struct VersionPayload {
     build: String,
     commit: String,
 }
-impl AsPayload<VersionPayload> for Version {
-    fn as_payload(&self) -> VersionPayload {
+impl From<Version> for VersionPayload {
+    fn from(value: Version) -> VersionPayload {
         VersionPayload {
-            env: self.env().to_string(),
-            build: self.build().to_string(),
-            commit: self.commit().to_string(),
+            env: value.env().to_string(),
+            build: value.build().to_string(),
+            commit: value.commit().to_string(),
         }
     }
 }
@@ -111,11 +106,11 @@ pub struct DependencyStatusPayload {
     dependency: Dependency,
     status: Status,
 }
-impl AsPayload<DependencyStatusPayload> for DependencyStatus {
-    fn as_payload(&self) -> DependencyStatusPayload {
+impl From<DependencyStatus> for DependencyStatusPayload {
+    fn from(value: DependencyStatus) -> DependencyStatusPayload {
         DependencyStatusPayload {
-            dependency: self.dependency().clone(),
-            status: self.status().clone(),
+            dependency: value.dependency().clone(),
+            status: value.status().clone(),
         }
     }
 }

@@ -8,19 +8,28 @@ jobs:
   build-and-publish:
     # Specify the execution environment. You can specify an image from Docker Hub or use one of our convenience images from CircleCI's Developer Hub.
     # See: https://circleci.com/docs/configuration-reference/#executor-job
-    docker:
-      - image: cimg/rust:1.74.0
+
+    machine:
+      image: ubuntu-2204:2022.07.1
+      docker_layer_caching: true
+
     # Add steps to the job
     # See: https://circleci.com/docs/configuration-reference/#steps
     steps:
       - checkout
+
+      - run:
+          name: Install Rust
+          command: |
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+            source $HOME/.cargo/env
+            rustup default stable
+
+
       - run:
           name: Run Tests
-          command: "cargo test"
-
-      - setup_remote_docker:
-          version: 20.10.14
-          docker_layer_caching: true
+          command: |
+            cargo test
 
       - run:
           name: Set app version

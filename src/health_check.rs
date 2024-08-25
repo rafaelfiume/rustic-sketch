@@ -52,7 +52,7 @@ impl HealthChecker for RusticSketchHealthChecker {
 
 #[derive(Clone, Constructor, Debug, Display, Error, Getters)]
 pub struct HealthCheckError {
-    #[getset(get = "pub")]
+    #[getset(get)]
     message: String,
 }
 
@@ -85,7 +85,7 @@ mod tests {
         };
         let result = health_checker.check().await.unwrap();
 
-        assert_eq!(result.status().clone(), Status::Ok);
+        assert_eq!(*result.status(), Status::Ok);
     }
 
     #[tokio::test]
@@ -104,9 +104,9 @@ mod tests {
         let service_status = health_checker.check().await.unwrap();
         let result = service_status.version();
 
-        assert_eq!(result.env().clone(), env);
-        assert_eq!(result.build().clone(), build);
-        assert_eq!(result.commit().clone(), commit);
+        assert_eq!(*result.env(), env);
+        assert_eq!(*result.build(), build);
+        assert_eq!(*result.commit(), commit);
     }
 }
 
