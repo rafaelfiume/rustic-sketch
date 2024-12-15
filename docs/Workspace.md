@@ -27,7 +27,7 @@
 
 - `cargo build [--release]`
 - `cargo check` # quickly check the codebase (development mode)
-- `cargo clippy` # linting tool (qualily assurance)
+- `cargo clippy` # linting tool (quality assurance)
 - `cargo fix [--edition] [--clippy] [--edition-idioms] [--dry-run]`
 - `cargo fmt`
 - `cargo new hello_world`
